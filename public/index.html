@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>טופס הצעת פרויקט AI – אוניברסיטה פתוחה</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --jeen-primary:   #1b3a6b;
+      --jeen-accent:    #00b4d8;
+      --jeen-accent2:   #0096c7;
+      --jeen-light:     #e8f4fd;
+      --jeen-dark:      #0d2445;
+      --jeen-gradient:  linear-gradient(135deg, #1b3a6b 0%, #0096c7 100%);
+      --radius:         12px;
+      --shadow:         0 4px 24px rgba(27,58,107,0.13);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Rubik', 'Arial Hebrew', Arial, sans-serif;
+      background: #f0f4f9;
+      min-height: 100vh;
+      direction: rtl;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--jeen-gradient);
+      padding: 0;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.18);
+    }
+    .header-inner {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 22px 32px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .logo-wrap img {
+      height: 54px;
+      object-fit: contain;
+    }
+    .logo-text {
+      display: flex;
+      flex-direction: column;
+    }
+    .logo-text .brand {
+      font-size: 1.7rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.5px;
+    }
+    .logo-text .sub {
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.75);
+      font-weight: 400;
+    }
+
+    /* ── Progress bar ── */
+    .progress-container {
+      background: var(--jeen-dark);
+      padding: 12px 32px;
+    }
+    .progress-inner {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+    .progress-label {
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .progress-bar-track {
+      height: 6px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--jeen-accent);
+      border-radius: 99px;
+      transition: width 0.4s ease;
+    }
+
+    /* ── Main form card ── */
+    .form-wrapper {
+      max-width: 860px;
+      margin: 32px auto 60px;
+      padding: 0 16px;
+    }
+    .form-card {
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    /* ── Step ── */
+    .step {
+      display: none;
+      padding: 36px 40px 28px;
+      animation: fadeIn 0.3s ease;
+    }
+    .step.active { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .step-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--jeen-primary);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .step-title .step-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--jeen-light);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .step-subtitle {
+      font-size: 0.85rem;
+      color: #6b7280;
+      margin-bottom: 28px;
+      padding-right: 46px;
+    }
+
+    /* ── Form fields ── */
+    .field-group {
+      margin-bottom: 22px;
+    }
+    label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 7px;
+    }
+    label .required {
+      color: #ef4444;
+      margin-right: 3px;
+    }
+    label .hint {
+      font-weight: 400;
+      color: #9ca3af;
+      font-size: 0.8rem;
+      display: block;
+      margin-top: 2px;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid #d1d5db;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      color: #111827;
+      background: #fff;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      direction: rtl;
+    }
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--jeen-accent);
+      box-shadow: 0 0 0 3px rgba(0,180,216,0.15);
+    }
+    input.error,
+    select.error,
+    textarea.error {
+      border-color: #ef4444;
+    }
+    textarea { resize: vertical; min-height: 90px; }
+
+    /* ── Radio / Checkbox cards ── */
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 10px;
+    }
+    .option-card {
+      position: relative;
+    }
+    .option-card input[type="radio"],
+    .option-card input[type="checkbox"] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .option-card label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border: 1.5px solid #d1d5db;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      color: #374151;
+      transition: all 0.2s;
+      font-size: 0.88rem;
+      margin: 0;
+    }
+    .option-card label::before {
+      content: '';
+      width: 18px;
+      height: 18px;
+      border: 2px solid #d1d5db;
+      border-radius: 4px;
+      flex-shrink: 0;
+      transition: all 0.2s;
+      background: #fff;
+    }
+    .option-card input[type="radio"] + label::before {
+      border-radius: 50%;
+    }
+    .option-card input:checked + label {
+      border-color: var(--jeen-accent);
+      background: var(--jeen-light);
+      color: var(--jeen-primary);
+    }
+    .option-card input:checked + label::before {
+      background: var(--jeen-accent);
+      border-color: var(--jeen-accent);
+      box-shadow: inset 0 0 0 3px #fff;
+    }
+    .option-card input[type="checkbox"]:checked + label::before {
+      background: var(--jeen-accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 10'%3E%3Cpath d='M1 5l3.5 4L11 1' stroke='white' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") center/10px no-repeat;
+      border-color: var(--jeen-accent);
+    }
+
+    /* ── Navigation buttons ── */
+    .step-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 40px 28px;
+      border-top: 1px solid #f3f4f6;
+      gap: 12px;
+    }
+    .btn {
+      padding: 11px 28px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: var(--jeen-gradient);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(0,150,199,0.35);
+    }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #374151;
+    }
+    .btn-secondary:hover { background: #e5e7eb; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* ── Success screen ── */
+    #success-screen {
+      display: none;
+      text-align: center;
+      padding: 60px 40px;
+    }
+    #success-screen .check-icon {
+      width: 80px;
+      height: 80px;
+      background: var(--jeen-light);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      font-size: 2.5rem;
+    }
+    #success-screen h2 {
+      font-size: 1.6rem;
+      color: var(--jeen-primary);
+      margin-bottom: 12px;
+    }
+    #success-screen p {
+      color: #6b7280;
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+
+    /* ── Divider ── */
+    .section-divider {
+      height: 1px;
+      background: #f3f4f6;
+      margin: 4px 0 22px;
+    }
+
+    /* ── Error message ── */
+    .field-error {
+      color: #ef4444;
+      font-size: 0.8rem;
+      margin-top: 5px;
+      display: none;
+    }
+
+    @media (max-width: 600px) {
+      .step { padding: 24px 20px 16px; }
+      .step-nav { padding: 16px 20px 20px; }
+      .header-inner { padding: 18px 20px; }
+      .options-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo-wrap">
+      <img src="/logo.png" alt="Jeen Logo" onerror="this.style.display='none'" />
+    </div>
+    <div class="logo-text">
+      <span class="brand">Jeen</span>
+      <span class="sub">טופס הצעת פרויקט AI &nbsp;|&nbsp; אוניברסיטה פתוחה</span>
+    </div>
+  </div>
+</header>
+
+<div class="progress-container">
+  <div class="progress-inner">
+    <div class="progress-label">
+      <span id="step-label">שלב 1 מתוך 7</span>
+      <span id="step-pct">14%</span>
+    </div>
+    <div class="progress-bar-track">
+      <div class="progress-bar-fill" id="progress-fill" style="width:14%"></div>
+    </div>
+  </div>
+</div>
+
+<div class="form-wrapper">
+  <div class="form-card">
+
+    <!-- ══ STEP 1: General Details ══ -->
+    <div class="step active" id="step-1">
+      <div class="step-title">
+        <div class="step-icon">👤</div>
+        פרטים כלליים
+      </div>
+      <p class="step-subtitle">ספר/י לנו קצת על עצמך</p>
+      <div class="section-divider"></div>
+
+      <div class="field-group">
+        <label>שם מלא <span class="required">*</span></label>
+        <input type="text" id="fullName" placeholder="שם פרטי ושם משפחה" />
+        <div class="field-error" id="err-fullName">נא למלא שם מלא</div>
+      </div>
+
+      <div class="field-group">
+        <label>כתובת אימייל <span class="required">*</span></label>
+        <input type="email" id="email" placeholder="example@openu.ac.il" />
+        <div class="field-error" id="err-email">נא למלא כתובת אימייל תקינה</div>
+      </div>
+
+      <div class="field-group">
+        <label>תפקיד / סטטוס <span class="required">*</span></label>
+        <div class="options-grid">
+          <div class="option-card">
+            <input type="radio" name="role" id="role-student" value="סטודנט" />
+            <label for="role-student">🎓 סטודנט</label>
+          </div>
+          <div class="option-card">
+            <input type="radio" name="role" id="role-lecturer" value="מרצה" />
+            <label for="role-lecturer">👨‍🏫 מרצה</label>
+          </div>
+          <div class="option-card">
+            <input type="radio" name="role" id="role-admin" value="צוות מנהלי" />
+            <label for="role-admin">🏢 צוות מנהלי</label>
+          </div>
+          <div class="option-card">
+            <input type="radio" name="role" id="role-other" value="אחר" />
+            <label for="role-other">👋 אחר</label>
+          </div>
+        </div>
+        <div class="field-error" id="err-role">נא לבחור תפקיד</div>
+      </div>
+
+      <div class="field-group">
+        <label>מחלקה / יחידה בארגון</label>
+        <input type="text" id="department" placeholder="לדוגמה: המחלקה למדעי המחשב" />
+      </div>
+    </div>
+
+    <!-- ══ STEP 2: Project Idea ══ -->
+    <div class="step" id="step-2">
+      <div class="step-title">
+        <div class="step-icon">💡</div>
+        רעיון לפרויקט
+      </div>
+      <p class="step-subtitle">תאר/י את הרעיון שלך לפתרון מבוסס AI</p>
+      <div class="section-divider"></div>
+
+      <div class="field-group">
+        <label>שם הפרויקט <span class="required">*</span></label>
+        <input type="text" id="projectName" placeholder="תן/י שם לפרויקט שלך" />
+        <div class="field-error" id="err-projectName">נא למלא שם פרויקט</div>
+      </div>
+
+      <div class="field-group">
+        <label>תיאור קצר של הרעיון <span class="required">*</span>
+          <span class="hint">מה הפתרון מבוסס ה-AI שאתה מציע? (בוט, אוטומציה, ניתוח מידע וכו')</span>
+        </label>
+        <textarea id="projectDescription" rows="4" placeholder="תאר/י בקצרה את הרעיון..."></textarea>
+        <div class="field-error" id="err-projectDescription">נא לתאר את הרעיון</div>
+      </div>
+    </div>
+
+    <!-- ══ STEP 3: Problem & Need ══ -->
+    <div class="step" id="step-3">
+      <div class="step-title">
+        <div class="step-icon">🎯</div>
+        בעיה וצורך
+      </div>
+      <p class="step-subtitle">הגדר/י את הבעיה שהפרויקט בא לפתור</p>
+      <div class="section-divider"></div>
+
+      <div class="field-group">
+        <label>מה הבעיה המרכזית שהפתרון נועד לפתור? <span class="required">*</span></label>
+        <textarea id="mainProblem" rows="3" placeholder="תאר/י את הבעיה..."></textarea>
+        <div class="field-error" id="err-mainProblem">נא לתאר את הבעיה המרכזית</div>
+      </div>
+
+      <div class="field-group">
+        <label>איך מתמודדים עם הבעיה היום?</label>
+        <textarea id="currentSolution" rows="3" placeholder="תאר/י את הפתרון הנוכחי..."></textarea>
+      </div>
+
+      <div class="field-group">
+        <label>מה החסרונות של המצב הקיים?</label>
+        <textarea id="currentDisadvantages" rows="3" placeholder="מה לא עובד טוב היום?"></textarea>
+      </div>
+    </div>
+
+    <!-- ══ STEP 4: Target Audience ══ -->
+    <div class="step" id="step-4">
+      <div class="step-title">
+        <div class="step-icon">👥</div>
+        קהל יעד והשפעה
+      </div>
+      <p class="step-subtitle">מי ייהנה מהפתרון וכמה?</p>
+      <div class="section-divider"></div>
+
+      <div class="field-group">
+        <label>מי קהל היעד של הפתרון? <span class="required">*</span></label>
+        <input type="text" id="targetAudience" placeholder="לדוגמה: סטודנטים, מרצים, מזכירות..." />
+        <div class="field-error" id="err-targetAudience">נא לציין את קהל היעד</div>
+      </div>
+
+      <div class="field-group">
+        <label>כמה משתמשים פוטנציאליים?</label>
+        <select id="userCount">
+          <option value="">בחר/י טווח...</option>
+          <option value="פחות מ-100">פחות מ-100</option>
+          <option value="100–500">100–500</option>
+          <option value="500–2,000">500–2,000</option>
+          <option value="2,000–10,000">2,000–10,000</option>
+          <option value="יותר מ-10,000">יותר מ-10,000</option>
+        </select>
+      </div>
+
+      <div class="field-group">
+        <label>איזה שיפור צפוי בעקבות הפתרון?
+          <span class="hint">חיסכון בזמן, שיפור שירות, צמצום טעויות וכו'</span>
+        </label>
+        <textarea id="expectedImprovement" rows="3" placeholder="תאר/י את השיפור הצפוי..."></textarea>
+      </div>
+    </div>
+
+    <!-- ══ STEP 5: AI Aspects ══ -->
+    <div class="step" id="step-5">
+      <div class="step-title">
+        <div class="step-icon">🤖</div>
+        היבטי AI
+      </div>
+      <p class="step-subtitle">פרט/י על הפתרון הטכנולוגי המוצע</p>
+      <div class="section-divider"></div>
+
+      <div class="field-group">
+        <label>איזה סוג פתרון AI הכי מתאים לדעתך?</label>
+        <div class="options-grid">
+          <div class="option-card">
+            <input type="checkbox" id="ai-chatbot" name="aiType" value="צ׳אטבוט (שיחות עם משתמשים)" />
+            <label for="ai-chatbot">💬 צ׳אטבוט</label>
+          </div>
+          <div class="option-card">
+            <input type="checkbox" id="ai-agent" name="aiType" value="סוכן AI אוטונומי (מבצע פעולות)" />
+            <label for="ai-agent">⚙️ סוכן AI אוטונומי</label>
+          </div>
+          <div class="option-card">
+            <input type="checkbox" id="ai-data" name="aiType" value="ניתוח מידע / דאטה" />
+            <label for="ai-data">📊 ניתוח מידע / דאטה</label>
+          </div>
+          <div class="option-card">
+            <input type="checkbox" id="ai-content" name="aiType" value="יצירת תוכן" />
+            <label for="ai-content">✍️ יצירת תוכן</label>
+          </div>
+          <div class="option-card">
+            <input type="checkbox" id="ai-unsure" name="aiType" value="לא בטוח" />
+            <label for="ai-unsure">🤔 לא בטוח</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>איזה סוג מידע הבוט/המערכת צריכים להכיר?
+          <span class="hint">מסמכים, נהלים, מאגרי ידע, מיילים, מערכות וכו'</span>
+        </label>
+        <textarea id="requiredData" rows="3" placeholder="תאר/י את המידע הדרוש..."></textarea>
+      </div>
+
+      <div class="field-group">
+        <label>האם יש צורך בתשובות מותאמות אישית לפי משתמש? <span class="required">*</span>
+          <span class="hint">בהתאם להרשאות / תפקידים</span>
+        </label>
+        <div class="options-grid">
+          <div class="option-card">
+            <input type="radio" name="personalized" id="pers-yes" value="כן" />
+            <label for="pers-yes">✅ כן</label>
+          </div>
+          <div class="option-card">
+            <input type="radio" name="personalized" id="pers-no" value="לא" />
+            <label for="pers-no">❌ לא</label>
+          </div>
+          <div class="option-card">
+            <input type="radio" name="personalized" id="pers-unsure" value="לא בטוח" />
+            <label for="pers-unsure">🤔 לא בטוח</label>
+          </div>
+        </div>
+        <div class="field-error" id="err-personalized">נא לבחור אפשרות</div>
+      </div>
+    </div>
+
+    <!-- ══ STEP 6: Integrations & UX ══ -->
+    <div class="step" id="step-6">
+      <div class="step-title">
+        <div class="step-icon">🔗</div>
+        אינטגרציות וחוויית משתמש
+      </div>
+      <p class="step-subtitle">מערכות קיימות ואופן השימוש בפתרון</p>
+      <div class="section-divider"></div>
+
+      <div class="field-group">
+        <label>לאילו מערכות הפתרון צריך להתחבר?
+          <span class="hint">Moodle, מערכות סטודנטים, CRM, מערכות פנים ארגוניות וכו'</span>
+        </label>
+        <textarea id="integrations" rows="3" placeholder="פרט/י את המערכות הרלוונטיות..."></textarea>
+      </div>
+
+      <div class="field-group">
+        <label>איך המשתמשים אמורים להשתמש בפתרון?</label>
+        <div class="options-grid">
+          <div class="option-card">
+            <input type="checkbox" id="ui-chat" name="uiType" value="צ׳אט (כמו וואטסאפ/צ׳אט)" />
+            <label for="ui-chat">💬 צ׳אט</label>
+          </div>
+          <div class="option-card">
+            <input type="checkbox" id="ui-internal" name="uiType" value="מערכת פנימית" />
+            <label for="ui-internal">🏢 מערכת פנימית</label>
+          </div>
+          <div class="option-card">
+            <input type="checkbox" id="ui-website" name="uiType" value="אתר" />
+            <label for="ui-website">🌐 אתר</label>
+          </div>
+          <div class="option-card">
+            <input type="checkbox" id="ui-other" name="uiType" value="אחר" />
+            <label for="ui-other">📱 אחר</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>האם נדרש ממשק משתמש ייחודי?</label>
+        <div class="options-grid">
+          <div class="option-card">
+            <input type="radio" name="customUI" id="ui-yes" value="כן" />
+            <label for="ui-yes">✅ כן</label>
+          </div>
+          <div class="option-card">
+            <input type="radio" name="customUI" id="ui-no" value="לא" />
+            <label for="ui-no">❌ לא</label>
+          </div>
+          <div class="option-card">
+            <input type="radio" name="customUI" id="ui-unsure" value="לא בטוח" />
+            <label for="ui-unsure">🤔 לא בטוח</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="field-group" id="customUIDetails-wrap" style="display:none">
+        <label>פרט/י את הממשק הנדרש</label>
+        <textarea id="customUIDetails" rows="2" placeholder="תאר/י את הממשק הייחודי..."></textarea>
+      </div>
+    </div>
+
+    <!-- ══ STEP 7: Additional Notes ══ -->
+    <div class="step" id="step-7">
+      <div class="step-title">
+        <div class="step-icon">📝</div>
+        הערות נוספות
+      </div>
+      <p class="step-subtitle">כל מידע נוסף שחשוב לך לשתף</p>
+      <div class="section-divider"></div>
+
+      <div class="field-group">
+        <label>הערות נוספות</label>
+        <textarea id="additionalNotes" rows="6" placeholder="כל הערה, שאלה או מידע נוסף שתרצה/י לשתף..."></textarea>
+      </div>
+
+      <div style="background: var(--jeen-light); border-radius: 8px; padding: 16px; margin-top: 8px;">
+        <p style="font-size: 0.85rem; color: var(--jeen-primary); font-weight: 500;">
+          לחיצה על "שלח הצעה" תשלח את הטופס לצוות Jeen לבדיקה. נחזור אליך בהקדם.
+        </p>
+      </div>
+    </div>
+
+    <!-- ══ SUCCESS ══ -->
+    <div id="success-screen">
+      <div class="check-icon">✅</div>
+      <h2>ההצעה נשלחה בהצלחה!</h2>
+      <p>תודה על שיתוף הרעיון שלך.<br />צוות Jeen יבחן את ההצעה ויצור איתך קשר בהקדם.</p>
+    </div>
+
+    <!-- ══ Navigation ══ -->
+    <div class="step-nav" id="nav-bar">
+      <button class="btn btn-secondary" id="btn-prev" onclick="changeStep(-1)" disabled>→ הקודם</button>
+      <button class="btn btn-primary" id="btn-next" onclick="changeStep(1)">הבא ←</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const TOTAL_STEPS = 7;
+  let currentStep = 1;
+
+  // Show/hide custom UI details field
+  document.querySelectorAll('input[name="customUI"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      document.getElementById('customUIDetails-wrap').style.display =
+        radio.value === 'כן' && radio.checked ? 'block' : 'none';
+    });
+  });
+
+  function updateProgress() {
+    const pct = Math.round((currentStep / TOTAL_STEPS) * 100);
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('step-label').textContent = `שלב ${currentStep} מתוך ${TOTAL_STEPS}`;
+    document.getElementById('step-pct').textContent = pct + '%';
+    document.getElementById('btn-prev').disabled = currentStep === 1;
+    const isLast = currentStep === TOTAL_STEPS;
+    document.getElementById('btn-next').textContent = isLast ? '✉️ שלח הצעה' : 'הבא ←';
+  }
+
+  function getVal(id) {
+    const el = document.getElementById(id);
+    return el ? el.value.trim() : '';
+  }
+
+  function validateStep(step) {
+    let valid = true;
+
+    function showErr(id, show) {
+      const el = document.getElementById('err-' + id);
+      if (el) el.style.display = show ? 'block' : 'none';
+      const input = document.getElementById(id);
+      if (input) input.classList.toggle('error', show);
+    }
+
+    if (step === 1) {
+      const name = getVal('fullName');
+      const email = getVal('email');
+      const role = document.querySelector('input[name="role"]:checked');
+      showErr('fullName', !name);
+      showErr('email', !email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
+      showErr('role', !role);
+      if (!name || !email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !role) valid = false;
+    }
+    if (step === 2) {
+      showErr('projectName', !getVal('projectName'));
+      showErr('projectDescription', !getVal('projectDescription'));
+      if (!getVal('projectName') || !getVal('projectDescription')) valid = false;
+    }
+    if (step === 3) {
+      showErr('mainProblem', !getVal('mainProblem'));
+      if (!getVal('mainProblem')) valid = false;
+    }
+    if (step === 4) {
+      showErr('targetAudience', !getVal('targetAudience'));
+      if (!getVal('targetAudience')) valid = false;
+    }
+    if (step === 5) {
+      const pers = document.querySelector('input[name="personalized"]:checked');
+      showErr('personalized', !pers);
+      if (!pers) valid = false;
+    }
+    return valid;
+  }
+
+  async function changeStep(dir) {
+    if (dir === 1 && !validateStep(currentStep)) return;
+
+    if (dir === 1 && currentStep === TOTAL_STEPS) {
+      await submitForm();
+      return;
+    }
+
+    document.getElementById('step-' + currentStep).classList.remove('active');
+    currentStep += dir;
+    document.getElementById('step-' + currentStep).classList.add('active');
+    updateProgress();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  async function submitForm() {
+    const aiTypes = [...document.querySelectorAll('input[name="aiType"]:checked')].map(e => e.value);
+    const uiTypes = [...document.querySelectorAll('input[name="uiType"]:checked')].map(e => e.value);
+
+    const payload = {
+      fullName:             getVal('fullName'),
+      email:                getVal('email'),
+      role:                 document.querySelector('input[name="role"]:checked')?.value || '',
+      department:           getVal('department'),
+      projectName:          getVal('projectName'),
+      projectDescription:   getVal('projectDescription'),
+      mainProblem:          getVal('mainProblem'),
+      currentSolution:      getVal('currentSolution'),
+      currentDisadvantages: getVal('currentDisadvantages'),
+      targetAudience:       getVal('targetAudience'),
+      userCount:            getVal('userCount'),
+      expectedImprovement:  getVal('expectedImprovement'),
+      aiTypes:              aiTypes.join(', '),
+      requiredData:         getVal('requiredData'),
+      personalized:         document.querySelector('input[name="personalized"]:checked')?.value || '',
+      integrations:         getVal('integrations'),
+      uiTypes:              uiTypes.join(', '),
+      customUI:             document.querySelector('input[name="customUI"]:checked')?.value || '',
+      customUIDetails:      getVal('customUIDetails'),
+      additionalNotes:      getVal('additionalNotes'),
+    };
+
+    try {
+      const res = await fetch('/api/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (data.success) {
+        document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+        document.getElementById('nav-bar').style.display = 'none';
+        document.getElementById('success-screen').style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    } catch (e) {
+      alert('שגיאה בשליחת הטופס. נסה/י שוב.');
+    }
+  }
+
+  updateProgress();
+</script>
+</body>
+</html>

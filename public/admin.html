@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin – סקר פרויקט AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --jeen-primary: #1b3a6b;
+      --jeen-accent:  #00b4d8;
+      --jeen-accent2: #0096c7;
+      --jeen-light:   #e8f4fd;
+      --jeen-dark:    #0d2445;
+      --jeen-gradient: linear-gradient(135deg, #1b3a6b 0%, #0096c7 100%);
+      --radius: 10px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Rubik', Arial, sans-serif;
+      background: #f0f4f9;
+      min-height: 100vh;
+      direction: rtl;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--jeen-gradient);
+      padding: 0;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.18);
+    }
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .header-left { display: flex; align-items: center; gap: 14px; }
+    .logo-wrap img { height: 44px; object-fit: contain; }
+    .brand { font-size: 1.4rem; font-weight: 700; color: #fff; }
+    .header-badge {
+      background: rgba(255,255,255,0.18);
+      color: #fff;
+      padding: 4px 12px;
+      border-radius: 99px;
+      font-size: 0.78rem;
+      font-weight: 500;
+    }
+    .header-right a {
+      color: rgba(255,255,255,0.85);
+      font-size: 0.85rem;
+      text-decoration: none;
+    }
+    .header-right a:hover { color: #fff; }
+
+    /* ── Main ── */
+    .main {
+      max-width: 1200px;
+      margin: 28px auto 60px;
+      padding: 0 16px;
+    }
+
+    /* ── Stats bar ── */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      box-shadow: 0 2px 10px rgba(27,58,107,0.08);
+      border-top: 3px solid var(--jeen-accent);
+    }
+    .stat-card .val {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--jeen-primary);
+      line-height: 1;
+    }
+    .stat-card .lbl {
+      font-size: 0.8rem;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+
+    /* ── Toolbar ── */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .toolbar input[type="search"] {
+      flex: 1;
+      min-width: 200px;
+      padding: 9px 14px;
+      border: 1.5px solid #d1d5db;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      direction: rtl;
+    }
+    .toolbar input:focus { outline: none; border-color: var(--jeen-accent); }
+
+    .btn {
+      padding: 9px 20px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.18s;
+    }
+    .btn-primary { background: var(--jeen-gradient); color: #fff; }
+    .btn-primary:hover { opacity: 0.88; }
+    .btn-danger { background: #fee2e2; color: #dc2626; }
+    .btn-danger:hover { background: #fecaca; }
+    .btn-sm { padding: 5px 12px; font-size: 0.8rem; }
+
+    /* ── Table ── */
+    .table-wrap {
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: 0 2px 10px rgba(27,58,107,0.08);
+      overflow: hidden;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+    thead tr {
+      background: var(--jeen-primary);
+      color: #fff;
+    }
+    th {
+      padding: 13px 14px;
+      text-align: right;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+    }
+    th:hover { background: var(--jeen-dark); }
+    td {
+      padding: 11px 14px;
+      border-bottom: 1px solid #f3f4f6;
+      color: #374151;
+      vertical-align: top;
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    tr:hover td { background: var(--jeen-light); }
+    .badge {
+      display: inline-block;
+      padding: 2px 9px;
+      border-radius: 99px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge-blue { background: #dbeafe; color: #1d4ed8; }
+    .badge-green { background: #dcfce7; color: #15803d; }
+    .badge-gray { background: #f3f4f6; color: #374151; }
+
+    /* ── Detail modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: #fff;
+      border-radius: var(--radius);
+      max-width: 720px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    }
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid #f3f4f6;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      background: #fff;
+      z-index: 1;
+    }
+    .modal-header h2 { font-size: 1.1rem; color: var(--jeen-primary); }
+    .modal-close {
+      background: #f3f4f6;
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-body { padding: 20px 24px; }
+    .detail-row {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 8px 16px;
+      padding: 10px 0;
+      border-bottom: 1px solid #f3f4f6;
+      align-items: start;
+    }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-key {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #6b7280;
+      padding-top: 2px;
+    }
+    .detail-val { font-size: 0.9rem; color: #111827; word-break: break-word; }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #9ca3af;
+    }
+    .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+
+    .loading { text-align: center; padding: 40px; color: #6b7280; }
+
+    @media (max-width: 700px) {
+      .stats-bar { grid-template-columns: 1fr 1fr; }
+      td { max-width: 100px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-left">
+      <div class="logo-wrap">
+        <img src="/logo.png" alt="Jeen" onerror="this.style.display='none'" />
+      </div>
+      <span class="brand">Jeen</span>
+      <span class="header-badge">Admin Panel</span>
+    </div>
+    <div class="header-right">
+      <a href="/">← לטופס הסקר</a>
+    </div>
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- Stats -->
+  <div class="stats-bar" id="stats-bar">
+    <div class="stat-card">
+      <div class="val" id="stat-total">—</div>
+      <div class="lbl">סה"כ הצעות</div>
+    </div>
+    <div class="stat-card">
+      <div class="val" id="stat-today">—</div>
+      <div class="lbl">הגיעו היום</div>
+    </div>
+    <div class="stat-card">
+      <div class="val" id="stat-students">—</div>
+      <div class="lbl">סטודנטים</div>
+    </div>
+    <div class="stat-card">
+      <div class="val" id="stat-lecturers">—</div>
+      <div class="lbl">מרצים</div>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <input type="search" id="search-input" placeholder="🔍 חיפוש לפי שם, אימייל, פרויקט..." oninput="renderTable()" />
+    <button class="btn btn-primary" onclick="exportCSV()">⬇️ ייצוא CSV</button>
+    <button class="btn" style="background:#f3f4f6;color:#374151;" onclick="loadData()">🔄 רענן</button>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <div class="loading" id="loading">טוען...</div>
+    <table id="responses-table" style="display:none">
+      <thead>
+        <tr>
+          <th onclick="sortBy('submittedAt')">📅 תאריך</th>
+          <th onclick="sortBy('fullName')">👤 שם</th>
+          <th onclick="sortBy('email')">📧 אימייל</th>
+          <th onclick="sortBy('role')">🏷️ תפקיד</th>
+          <th onclick="sortBy('projectName')">💡 פרויקט</th>
+          <th>פעולות</th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+    <div class="empty-state" id="empty-state" style="display:none">
+      <div class="icon">📭</div>
+      <p>אין הצעות להצגה</p>
+    </div>
+  </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-title">פרטי הצעה</h2>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+  let allData = [];
+  let sortKey = 'submittedAt';
+  let sortDir = -1;
+
+  const LABELS = {
+    id:                   'מזהה',
+    submittedAt:          'נשלח בתאריך',
+    fullName:             'שם מלא',
+    email:                'אימייל',
+    role:                 'תפקיד',
+    department:           'מחלקה / יחידה',
+    projectName:          'שם הפרויקט',
+    projectDescription:   'תיאור הרעיון',
+    mainProblem:          'בעיה מרכזית',
+    currentSolution:      'פתרון נוכחי',
+    currentDisadvantages: 'חסרונות מצב קיים',
+    targetAudience:       'קהל יעד',
+    userCount:            'מספר משתמשים',
+    expectedImprovement:  'שיפור צפוי',
+    aiTypes:              'סוגי AI',
+    requiredData:         'מידע נדרש',
+    personalized:         'תשובות מותאמות אישית',
+    integrations:         'אינטגרציות',
+    uiTypes:              'אופן שימוש',
+    customUI:             'ממשק ייחודי',
+    customUIDetails:      'פרטי ממשק',
+    additionalNotes:      'הערות נוספות',
+  };
+
+  function roleBadge(role) {
+    const map = { 'סטודנט': 'badge-blue', 'מרצה': 'badge-green' };
+    return `<span class="badge ${map[role] || 'badge-gray'}">${role || '—'}</span>`;
+  }
+
+  function fmtDate(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    return d.toLocaleDateString('he-IL') + ' ' + d.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function isToday(iso) {
+    const d = new Date(iso);
+    const n = new Date();
+    return d.toDateString() === n.toDateString();
+  }
+
+  async function loadData() {
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('responses-table').style.display = 'none';
+    document.getElementById('empty-state').style.display = 'none';
+    try {
+      const res = await fetch('/api/admin/responses');
+      allData = await res.json();
+      updateStats();
+      renderTable();
+    } catch (e) {
+      document.getElementById('loading').textContent = 'שגיאה בטעינת הנתונים. נסה/י לרענן.';
+    }
+  }
+
+  function updateStats() {
+    document.getElementById('stat-total').textContent = allData.length;
+    document.getElementById('stat-today').textContent = allData.filter(r => isToday(r.submittedAt)).length;
+    document.getElementById('stat-students').textContent = allData.filter(r => r.role === 'סטודנט').length;
+    document.getElementById('stat-lecturers').textContent = allData.filter(r => r.role === 'מרצה').length;
+  }
+
+  function sortBy(key) {
+    if (sortKey === key) sortDir *= -1;
+    else { sortKey = key; sortDir = -1; }
+    renderTable();
+  }
+
+  function renderTable() {
+    const q = document.getElementById('search-input').value.toLowerCase();
+    let data = allData.filter(r =>
+      !q ||
+      (r.fullName || '').toLowerCase().includes(q) ||
+      (r.email || '').toLowerCase().includes(q) ||
+      (r.projectName || '').toLowerCase().includes(q) ||
+      (r.department || '').toLowerCase().includes(q)
+    );
+
+    data = [...data].sort((a, b) => {
+      const va = String(a[sortKey] || '');
+      const vb = String(b[sortKey] || '');
+      return va.localeCompare(vb, 'he') * sortDir;
+    });
+
+    const tbody = document.getElementById('table-body');
+    tbody.innerHTML = '';
+
+    document.getElementById('loading').style.display = 'none';
+
+    if (data.length === 0) {
+      document.getElementById('empty-state').style.display = 'block';
+      document.getElementById('responses-table').style.display = 'none';
+      return;
+    }
+
+    document.getElementById('empty-state').style.display = 'none';
+    document.getElementById('responses-table').style.display = 'table';
+
+    data.forEach(row => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td title="${row.submittedAt || ''}">${fmtDate(row.submittedAt)}</td>
+        <td title="${row.fullName || ''}">${row.fullName || '—'}</td>
+        <td title="${row.email || ''}">${row.email || '—'}</td>
+        <td>${roleBadge(row.role)}</td>
+        <td title="${row.projectName || ''}">${row.projectName || '—'}</td>
+        <td style="white-space:nowrap">
+          <button class="btn btn-sm" style="background:var(--jeen-light);color:var(--jeen-primary);margin-left:6px"
+            onclick="showDetail('${row.id}')">👁️ פרטים</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteRow('${row.id}', '${(row.fullName||'').replace(/'/g,'\\$&')}')">🗑️</button>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function showDetail(id) {
+    const row = allData.find(r => r.id === id);
+    if (!row) return;
+    document.getElementById('modal-title').textContent = row.projectName || 'פרטי הצעה';
+    const body = document.getElementById('modal-body');
+    body.innerHTML = Object.entries(LABELS)
+      .filter(([k]) => row[k] !== undefined && row[k] !== '')
+      .map(([k, label]) => `
+        <div class="detail-row">
+          <div class="detail-key">${label}</div>
+          <div class="detail-val">${k === 'submittedAt' ? fmtDate(row[k]) : (String(row[k] || '—').replace(/\n/g, '<br/>'))}</div>
+        </div>`)
+      .join('');
+    document.getElementById('modal').classList.add('open');
+  }
+
+  function closeModal(e) {
+    if (!e || e.target === document.getElementById('modal') || e.currentTarget === document.querySelector('.modal-close')) {
+      document.getElementById('modal').classList.remove('open');
+    }
+  }
+
+  async function deleteRow(id, name) {
+    if (!confirm(`האם למחוק את ההצעה של "${name}"?`)) return;
+    await fetch(`/api/admin/responses/${id}`, { method: 'DELETE' });
+    allData = allData.filter(r => r.id !== id);
+    updateStats();
+    renderTable();
+  }
+
+  function exportCSV() {
+    window.location.href = '/api/admin/export';
+  }
+
+  loadData();
+</script>
+</body>
+</html>
