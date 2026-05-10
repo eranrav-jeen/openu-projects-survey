@@ -1,103 +1,105 @@
 const express = require('express');
-const basicAuth = require('express-basic-auth');
 const { v4: uuidv4 } = require('uuid');
-const fs = require('fs');
+const Redis = require('ioredis');
 const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const ADMIN_USER = process.env.ADMIN_USER || 'admin';
 const ADMIN_PASS = process.env.ADMIN_PASS || 'jeen2025';
-const DATA_FILE = path.join(__dirname, 'data', 'responses.json');
 
-// Ensure data directory and file exist
-if (!fs.existsSync(path.join(__dirname, 'data'))) {
-  fs.mkdirSync(path.join(__dirname, 'data'));
-}
-if (!fs.existsSync(DATA_FILE)) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify([], null, 2));
+const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
+  maxRetriesPerRequest: 3,
+  lazyConnect: false,
+});
+
+redis.on('error', (err) => console.error('Redis error:', err.message));
+
+/* ── Storage helpers ── */
+async function loadResponses() {
+  const raw = await redis.hgetall('survey:responses');
+  if (!raw) return [];
+  return Object.values(raw).map((v) => JSON.parse(v));
 }
 
-function loadResponses() {
-  try {
-    return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
-  } catch {
-    return [];
+/* ── Auth middleware (returns JSON 401 so the admin login overlay handles it) ── */
+function requireAuth(req, res, next) {
+  const auth = req.headers['authorization'];
+  if (!auth || !auth.startsWith('Basic ')) {
+    res.setHeader('WWW-Authenticate', 'Basic realm="Jeen Admin"');
+    return res.status(401).json({ error: 'Unauthorized' });
   }
-}
-
-function saveResponses(responses) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(responses, null, 2));
+  const decoded = Buffer.from(auth.slice(6), 'base64').toString();
+  const colon = decoded.indexOf(':');
+  const user = decoded.slice(0, colon);
+  const pass = decoded.slice(colon + 1);
+  if (user !== ADMIN_USER || pass !== ADMIN_PASS) {
+    res.setHeader('WWW-Authenticate', 'Basic realm="Jeen Admin"');
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  next();
 }
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Submit a survey response
-app.post('/api/submit', (req, res) => {
-  const responses = loadResponses();
+/* ── Survey submit ── */
+app.post('/api/submit', async (req, res) => {
   const entry = {
     id: uuidv4(),
     submittedAt: new Date().toISOString(),
     ...req.body,
   };
-  responses.push(entry);
-  saveResponses(responses);
+  await redis.hset('survey:responses', entry.id, JSON.stringify(entry));
   res.json({ success: true, id: entry.id });
 });
 
-// Admin: list all responses (protected)
-app.get(
-  '/api/admin/responses',
-  basicAuth({ users: { [ADMIN_USER]: ADMIN_PASS }, challenge: true }),
-  (req, res) => {
-    res.json(loadResponses());
-  }
-);
+/* ── Admin: list responses ── */
+app.get('/api/admin/responses', requireAuth, async (req, res) => {
+  const responses = await loadResponses();
+  responses.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+  res.json(responses);
+});
 
-// Admin: delete a response (protected)
-app.delete(
-  '/api/admin/responses/:id',
-  basicAuth({ users: { [ADMIN_USER]: ADMIN_PASS }, challenge: true }),
-  (req, res) => {
-    const responses = loadResponses().filter((r) => r.id !== req.params.id);
-    saveResponses(responses);
-    res.json({ success: true });
-  }
-);
+/* ── Admin: delete response ── */
+app.delete('/api/admin/responses/:id', requireAuth, async (req, res) => {
+  await redis.hdel('survey:responses', req.params.id);
+  res.json({ success: true });
+});
 
-// Admin: export CSV (protected)
-app.get(
-  '/api/admin/export',
-  basicAuth({ users: { [ADMIN_USER]: ADMIN_PASS }, challenge: true }),
-  (req, res) => {
-    const responses = loadResponses();
-    if (responses.length === 0) {
-      return res.status(204).end();
-    }
-    const keys = Object.keys(responses[0]);
-    const csv = [
-      keys.join(','),
-      ...responses.map((r) =>
-        keys.map((k) => `"${String(r[k] ?? '').replace(/"/g, '""')}"`).join(',')
-      ),
-    ].join('\n');
-    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', 'attachment; filename="survey-responses.csv"');
-    res.send('﻿' + csv); // BOM for Excel Hebrew support
-  }
-);
+/* ── Admin: export CSV ── */
+const FIELD_ORDER = [
+  'id', 'submittedAt', 'fullName', 'email', 'role', 'department',
+  'projectName', 'projectDescription', 'mainProblem', 'currentSolution',
+  'currentDisadvantages', 'targetAudience', 'userCount', 'expectedImprovement',
+  'aiTypes', 'requiredData', 'personalized', 'integrations', 'uiTypes',
+  'customUI', 'customUIDetails', 'additionalNotes',
+];
 
-// Admin panel page (protected)
-app.get(
-  '/admin',
-  basicAuth({ users: { [ADMIN_USER]: ADMIN_PASS }, challenge: true }),
-  (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
-  }
-);
+app.get('/api/admin/export', requireAuth, async (req, res) => {
+  const responses = await loadResponses();
+  if (responses.length === 0) return res.status(204).end();
+
+  responses.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+
+  const csv = [
+    FIELD_ORDER.join(','),
+    ...responses.map((r) =>
+      FIELD_ORDER.map((k) => `"${String(r[k] ?? '').replace(/"/g, '""')}"`).join(',')
+    ),
+  ].join('\n');
+
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader('Content-Disposition', 'attachment; filename="survey-responses.csv"');
+  res.send('﻿' + csv);
+});
+
+/* ── Admin panel page ── */
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
 
 app.listen(PORT, () => {
   console.log(`Survey running at http://localhost:${PORT}`);
-  console.log(`Admin panel at http://localhost:${PORT}/admin  (user: ${ADMIN_USER})`);
+  console.log(`Admin panel at http://localhost:${PORT}/admin`);
 });
