@@ -247,6 +247,61 @@
 
     .loading { text-align: center; padding: 40px; color: #6b7280; }
 
+    /* ── Login overlay ── */
+    .login-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--jeen-gradient);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+    .login-overlay.open { display: flex; }
+    .login-box {
+      background: #fff;
+      border-radius: 16px;
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.3);
+      text-align: center;
+    }
+    .login-box .login-logo { height: 50px; margin-bottom: 20px; }
+    .login-box h2 { font-size: 1.3rem; color: var(--jeen-primary); margin-bottom: 6px; }
+    .login-box p { font-size: 0.85rem; color: #6b7280; margin-bottom: 24px; }
+    .login-box input {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid #d1d5db;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      margin-bottom: 12px;
+      direction: rtl;
+    }
+    .login-box input:focus { outline: none; border-color: var(--jeen-accent); }
+    .login-box .btn-login {
+      width: 100%;
+      padding: 12px;
+      background: var(--jeen-gradient);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+    .login-box .btn-login:hover { opacity: 0.9; }
+    .login-error {
+      color: #dc2626;
+      font-size: 0.85rem;
+      margin-top: 10px;
+      display: none;
+    }
+
     @media (max-width: 700px) {
       .stats-bar { grid-template-columns: 1fr 1fr; }
       td { max-width: 100px; }
@@ -254,6 +309,20 @@
   </style>
 </head>
 <body>
+
+<!-- Login overlay -->
+<div class="login-overlay open" id="login-overlay">
+  <div class="login-box">
+    <img class="login-logo" src="/logo.svg" alt="Jeen" />
+    <h2>Admin Panel</h2>
+    <p>כניסה לממשק ניהול ההצעות</p>
+    <input type="text" id="login-user" placeholder="שם משתמש" autocomplete="username" />
+    <input type="password" id="login-pass" placeholder="סיסמה" autocomplete="current-password"
+      onkeydown="if(event.key==='Enter') doLogin()" />
+    <button class="btn-login" onclick="doLogin()">כניסה →</button>
+    <div class="login-error" id="login-error">שם משתמש או סיסמה שגויים</div>
+  </div>
+</div>
 
 <header>
   <div class="header-inner">
@@ -337,6 +406,7 @@
   let allData = [];
   let sortKey = 'submittedAt';
   let sortDir = -1;
+  let authHeader = sessionStorage.getItem('adminAuth') || '';
 
   const LABELS = {
     id:                   'מזהה',
@@ -363,6 +433,34 @@
     additionalNotes:      'הערות נוספות',
   };
 
+  /* ── Auth ── */
+  async function doLogin() {
+    const user = document.getElementById('login-user').value.trim();
+    const pass = document.getElementById('login-pass').value;
+    if (!user || !pass) return;
+
+    const candidate = 'Basic ' + btoa(unescape(encodeURIComponent(user + ':' + pass)));
+    const res = await fetch('/api/admin/responses', { headers: { Authorization: candidate } });
+
+    if (res.status === 401) {
+      document.getElementById('login-error').style.display = 'block';
+      return;
+    }
+
+    authHeader = candidate;
+    sessionStorage.setItem('adminAuth', authHeader);
+    document.getElementById('login-overlay').classList.remove('open');
+
+    allData = await res.json();
+    updateStats();
+    renderTable();
+  }
+
+  function authFetch(url, opts = {}) {
+    return fetch(url, { ...opts, headers: { ...(opts.headers || {}), Authorization: authHeader } });
+  }
+
+  /* ── Data ── */
   function roleBadge(role) {
     const map = { 'סטודנט': 'badge-blue', 'מרצה': 'badge-green' };
     return `<span class="badge ${map[role] || 'badge-gray'}">${role || '—'}</span>`;
@@ -385,7 +483,13 @@
     document.getElementById('responses-table').style.display = 'none';
     document.getElementById('empty-state').style.display = 'none';
     try {
-      const res = await fetch('/api/admin/responses');
+      const res = await authFetch('/api/admin/responses');
+      if (res.status === 401) {
+        sessionStorage.removeItem('adminAuth');
+        authHeader = '';
+        document.getElementById('login-overlay').classList.add('open');
+        return;
+      }
       allData = await res.json();
       updateStats();
       renderTable();
@@ -425,7 +529,6 @@
 
     const tbody = document.getElementById('table-body');
     tbody.innerHTML = '';
-
     document.getElementById('loading').style.display = 'none';
 
     if (data.length === 0) {
@@ -478,17 +581,29 @@
 
   async function deleteRow(id, name) {
     if (!confirm(`האם למחוק את ההצעה של "${name}"?`)) return;
-    await fetch(`/api/admin/responses/${id}`, { method: 'DELETE' });
+    await authFetch(`/api/admin/responses/${id}`, { method: 'DELETE' });
     allData = allData.filter(r => r.id !== id);
     updateStats();
     renderTable();
   }
 
-  function exportCSV() {
-    window.location.href = '/api/admin/export';
+  async function exportCSV() {
+    const res = await authFetch('/api/admin/export');
+    if (!res.ok) return;
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'survey-responses.csv';
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
-  loadData();
+  /* ── Init: try stored credentials first ── */
+  if (authHeader) {
+    document.getElementById('login-overlay').classList.remove('open');
+    loadData();
+  }
 </script>
 </body>
 </html>
